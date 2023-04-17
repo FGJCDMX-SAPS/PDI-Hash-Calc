@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33414.496
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDI Hash Calc", "PDI Hash Calc\PDI Hash Calc.csproj", "{7CEE8236-B4C2-497F-AFBD-52F71525C380}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7CEE8236-B4C2-497F-AFBD-52F71525C380}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CEE8236-B4C2-497F-AFBD-52F71525C380}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CEE8236-B4C2-497F-AFBD-52F71525C380}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CEE8236-B4C2-497F-AFBD-52F71525C380}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B1631621-1FC9-4408-A8F6-FE4885215111}
+	EndGlobalSection
+EndGlobal
