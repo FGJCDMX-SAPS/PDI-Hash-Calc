@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace PDI_Hash_Calc
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form 
     {
         bool calculando { get; set; }
         bool cancelar { get; set; }
@@ -142,7 +142,7 @@ namespace PDI_Hash_Calc
 
             //**** 
             //Establece las (des)habilitaciones de la interface usuario para evitar errores de interaccion
-            //*****
+            //****
 
             calculando = true;
 
