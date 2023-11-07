@@ -44,6 +44,7 @@
             this.bCancelar = new System.Windows.Forms.Button();
             this.bLimpiar = new System.Windows.Forms.Button();
             this.pbarProgresoArchivos = new System.Windows.Forms.ProgressBar();
+            this.labelProgresoArchivos = new System.Windows.Forms.Label();
             this.groupBoxAlgoritmos.SuspendLayout();
             this.gBOpciones.SuspendLayout();
             this.gBInFiles.SuspendLayout();
@@ -232,11 +233,20 @@
             this.pbarProgresoArchivos.Size = new System.Drawing.Size(222, 23);
             this.pbarProgresoArchivos.TabIndex = 11;
             // 
+            // labelProgresoArchivos
+            // 
+            this.labelProgresoArchivos.AutoSize = true;
+            this.labelProgresoArchivos.Location = new System.Drawing.Point(382, 66);
+            this.labelProgresoArchivos.Name = "labelProgresoArchivos";
+            this.labelProgresoArchivos.Size = new System.Drawing.Size(0, 13);
+            this.labelProgresoArchivos.TabIndex = 12;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(796, 442);
+            this.Controls.Add(this.labelProgresoArchivos);
             this.Controls.Add(this.pbarProgresoArchivos);
             this.Controls.Add(this.bLimpiar);
             this.Controls.Add(this.bCancelar);
@@ -256,6 +266,7 @@
             this.gBInFiles.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvFiles)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -277,6 +288,7 @@
         private System.Windows.Forms.Button bCancelar;
         private System.Windows.Forms.Button bLimpiar;
         private System.Windows.Forms.ProgressBar pbarProgresoArchivos;
+        private System.Windows.Forms.Label labelProgresoArchivos;
     }
 }
 

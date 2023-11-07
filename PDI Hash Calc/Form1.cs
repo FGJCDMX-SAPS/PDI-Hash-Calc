@@ -18,7 +18,7 @@ namespace PDI_Hash_Calc
 
 
         Task TareaAgregarArchivosLista { get; set; }
-        DataTable DTListaArchivos { get; set; }
+
 
         CancellationTokenSource CTStoken { get; set; }
         //CancellationToken CTsalida { get; set; }
@@ -30,7 +30,6 @@ namespace PDI_Hash_Calc
 
             CTStoken = new CancellationTokenSource();
 
-            DTListaArchivos = new DataTable();
             //***
             //Crea las columnas para la tabla personalizada
             //***
@@ -39,42 +38,36 @@ namespace PDI_Hash_Calc
             colNombreArchivo.CellTemplate = new DataGridViewTextBoxCell();
             colNombreArchivo.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             dgvFiles.Columns.Add(colNombreArchivo);
-            DTListaArchivos.Columns.Add(colNombreArchivo.Name, typeof(string));
 
 
             DataGridViewProgressColumn colProgreso = new DataGridViewProgressColumn();
             colProgreso.Name = "Progreso";
             colProgreso.HeaderText = "Progreso";
             dgvFiles.Columns.Add(colProgreso);
-            DTListaArchivos.Columns.Add(colProgreso.Name, typeof(int));
 
             DataGridViewColumn colMD5 = new DataGridViewColumn();
             colMD5.Name = "MD5";
             colMD5.CellTemplate = new DataGridViewTextBoxCell();
             colMD5.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             dgvFiles.Columns.Add(colMD5);
-            DTListaArchivos.Columns.Add(colMD5.Name, typeof(string));
 
             DataGridViewColumn colSHA1 = new DataGridViewColumn();
             colSHA1.Name = "SHA1";
             colSHA1.CellTemplate = new DataGridViewTextBoxCell();
             colSHA1.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             dgvFiles.Columns.Add(colSHA1);
-            DTListaArchivos.Columns.Add(colSHA1.Name, typeof(string));
 
             DataGridViewColumn colSHA256 = new DataGridViewColumn();
             colSHA256.Name = "SHA256";
             colSHA256.CellTemplate = new DataGridViewTextBoxCell();
             colSHA256.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             dgvFiles.Columns.Add(colSHA256);
-            DTListaArchivos.Columns.Add(colSHA256.Name, typeof(string));
 
             DataGridViewColumn colSHA512 = new DataGridViewColumn();
             colSHA512.Name = "SHA512";
             colSHA512.CellTemplate = new DataGridViewTextBoxCell();
             colSHA512.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             dgvFiles.Columns.Add(colSHA512);
-            DTListaArchivos.Columns.Add(colSHA512.Name, typeof(string));
 
             calculando = false;
             cancelar = false;
@@ -91,7 +84,7 @@ namespace PDI_Hash_Calc
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
 
-
+                //Tarea que genera la lista de archivos antes de llenar datagridview
                 TareaAgregarArchivosLista = Task.Run(() =>
                 {
                     // obten la lista de los que se arrastraron (lista original)
@@ -121,33 +114,27 @@ namespace PDI_Hash_Calc
                     }
 
                 });
-
                 await TareaAgregarArchivosLista;
+
+
 
                 dgvFiles.Rows.Clear();
                 dgvFiles.Rows.Add();
-                DataGridViewRow r = (DataGridViewRow)dgvFiles.Rows[0].Clone();
+                DataGridViewRow rbase = (DataGridViewRow)dgvFiles.Rows[0].Clone();
                 dgvFiles.Rows.Clear();
 
                 List<DataGridViewRow> listadgv_files = new List<DataGridViewRow>();
 
-
                 IProgress<List<DataGridViewRow>> ProgLista = new Progress<List<DataGridViewRow>>((val) =>
                 {
                     dgvFiles.Rows.AddRange(val.ToArray());
-                });
-
+                });               
                 TareaAgregarArchivosLista = Task.Run(() =>
                 {
                     //hace vaciado de lista en la tabla
                     for (int i = 0; i < lista_archivos.Count; i++)
                     {
-                        //nombre - prog-md5-sha1-sha256-sha512
-                        //object[] renglon = new object[] { archivo, 0, "", "", "", "" };
-                        //dgvFiles.Rows.Add(renglon);
-                        //ProgLista.Report(renglon);
-
-                        var r_temp = (DataGridViewRow)r.Clone();
+                        var r_temp = (DataGridViewRow)rbase.Clone();
                         r_temp.Cells[0].Value = lista_archivos[i];
                         r_temp.Cells[1].Value = 0;
                         r_temp.Cells[2].Value = "";
@@ -188,27 +175,19 @@ namespace PDI_Hash_Calc
             dgvFiles.Rows.Clear();
         }
 
-        static ReaderWriterLockSlim RWlock = new ReaderWriterLockSlim();
-
         private async void bComenzar_Click(object sender, EventArgs e)
         {
-            //indice de avance en la tabla de archivos
-            //int renglon_actual = 0;
             CTStoken = new CancellationTokenSource();
             CancellationToken CTsalida = CTStoken.Token;
-
-            Object p_lock = new Object();
 
             if (dgvFiles.Rows.Count <= 0)
             {
                 return;
             }
 
-
             //**** 
             //Establece las (des)habilitaciones de la interface usuario para evitar errores de interaccion
             //****
-
             calculando = true;
 
             bComenzar.Enabled = false;
@@ -249,10 +228,9 @@ namespace PDI_Hash_Calc
             }
 
             // Con este reporteador, se avanza en la tabla de archivos
-            IProgress<MensajeReporte> prog_select = new Progress<MensajeReporte>((val) =>
+            IProgress<int> prog_select = new Progress<int>((val) =>
             {
-                //dgvFiles.Rows[val.linea].Selected = true;
-                dgvFiles.FirstDisplayedScrollingRowIndex = val.linea;
+                dgvFiles.FirstDisplayedScrollingRowIndex = val;
 
             });
 
@@ -263,6 +241,12 @@ namespace PDI_Hash_Calc
             {
                 pbarProgresoArchivos.Value = val;
             });
+            IProgress<string> labelprogreso = new Progress<string>((val) =>
+            {
+                labelProgresoArchivos.Text = val;
+            });
+
+
             IProgress<MensajeReporte> progressMD5 = new Progress<MensajeReporte>((s) =>
             {
                 //RWlock.EnterWriteLock();
@@ -302,11 +286,14 @@ namespace PDI_Hash_Calc
                         if (CTsalida.IsCancellationRequested)
                         {
                             barraprogreso.Report(0);
+                            labelprogreso.Report("");
                             return;
                         }
 
                         int prog = (100 * i) / dt.Rows.Count;
                         barraprogreso.Report(prog);
+                        labelprogreso.Report($"{i+1} de {dt.Rows.Count} archivos procesados [{prog}%]");
+                        prog_select.Report(i);
 
                         if (checkBoxMD5.Checked)
                         {
@@ -324,9 +311,9 @@ namespace PDI_Hash_Calc
                         {
                             GeneradorHash.Calcular(dt.Rows[(int)i][0].ToString(), GeneradorHash.AlgoritmoHash.SHA512, progressSHA512, i, CTsalida);
                         }
-                    }//);
+                    }
                     barraprogreso.Report(100);
-
+                    labelprogreso.Report("Completado!!");
                 }, CTsalida);
 
             }
@@ -371,6 +358,7 @@ namespace PDI_Hash_Calc
         private void bCancelar_Click(object sender, EventArgs e)
         {
             cancelar = true;
+            bCancelar.Enabled = false;
             CTStoken.Cancel();
         }
     }
