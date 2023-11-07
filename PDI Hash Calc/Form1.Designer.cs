@@ -43,6 +43,7 @@
             this.bComenzar = new System.Windows.Forms.Button();
             this.bCancelar = new System.Windows.Forms.Button();
             this.bLimpiar = new System.Windows.Forms.Button();
+            this.pbarProgresoArchivos = new System.Windows.Forms.ProgressBar();
             this.groupBoxAlgoritmos.SuspendLayout();
             this.gBOpciones.SuspendLayout();
             this.gBInFiles.SuspendLayout();
@@ -132,6 +133,8 @@
             // cBRecursivo
             // 
             this.cBRecursivo.AutoSize = true;
+            this.cBRecursivo.Checked = true;
+            this.cBRecursivo.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cBRecursivo.Location = new System.Drawing.Point(6, 15);
             this.cBRecursivo.Name = "cBRecursivo";
             this.cBRecursivo.Size = new System.Drawing.Size(93, 17);
@@ -147,7 +150,7 @@
             this.gBInFiles.Controls.Add(this.dgvFiles);
             this.gBInFiles.Location = new System.Drawing.Point(11, 111);
             this.gBInFiles.Name = "gBInFiles";
-            this.gBInFiles.Size = new System.Drawing.Size(617, 215);
+            this.gBInFiles.Size = new System.Drawing.Size(773, 319);
             this.gBInFiles.TabIndex = 5;
             this.gBInFiles.TabStop = false;
             this.gBInFiles.Text = "Archivos para Procesar";
@@ -164,33 +167,35 @@
             this.dgvFiles.Name = "dgvFiles";
             this.dgvFiles.ReadOnly = true;
             this.dgvFiles.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvFiles.Size = new System.Drawing.Size(611, 196);
+            this.dgvFiles.Size = new System.Drawing.Size(767, 300);
             this.dgvFiles.TabIndex = 0;
             this.dgvFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragDrop);
             this.dgvFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragEnter);
             // 
             // bCarpeta
             // 
-            this.bCarpeta.Location = new System.Drawing.Point(284, 20);
+            this.bCarpeta.Location = new System.Drawing.Point(436, 12);
             this.bCarpeta.Name = "bCarpeta";
             this.bCarpeta.Size = new System.Drawing.Size(95, 23);
             this.bCarpeta.TabIndex = 6;
             this.bCarpeta.Text = "Abrir Carpeta";
             this.bCarpeta.UseVisualStyleBackColor = true;
+            this.bCarpeta.Visible = false;
             // 
             // bArchivo
             // 
-            this.bArchivo.Location = new System.Drawing.Point(284, 49);
+            this.bArchivo.Location = new System.Drawing.Point(537, 12);
             this.bArchivo.Name = "bArchivo";
             this.bArchivo.Size = new System.Drawing.Size(95, 23);
             this.bArchivo.TabIndex = 7;
             this.bArchivo.Text = "Abrir Archivo";
             this.bArchivo.UseVisualStyleBackColor = true;
+            this.bArchivo.Visible = false;
             // 
             // bComenzar
             // 
             this.bComenzar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bComenzar.Location = new System.Drawing.Point(472, 82);
+            this.bComenzar.Location = new System.Drawing.Point(628, 82);
             this.bComenzar.Name = "bComenzar";
             this.bComenzar.Size = new System.Drawing.Size(75, 23);
             this.bComenzar.TabIndex = 8;
@@ -202,7 +207,7 @@
             // 
             this.bCancelar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.bCancelar.Enabled = false;
-            this.bCancelar.Location = new System.Drawing.Point(553, 82);
+            this.bCancelar.Location = new System.Drawing.Point(709, 82);
             this.bCancelar.Name = "bCancelar";
             this.bCancelar.Size = new System.Drawing.Size(75, 23);
             this.bCancelar.TabIndex = 9;
@@ -212,7 +217,7 @@
             // 
             // bLimpiar
             // 
-            this.bLimpiar.Location = new System.Drawing.Point(284, 78);
+            this.bLimpiar.Location = new System.Drawing.Point(284, 82);
             this.bLimpiar.Name = "bLimpiar";
             this.bLimpiar.Size = new System.Drawing.Size(95, 23);
             this.bLimpiar.TabIndex = 10;
@@ -220,11 +225,19 @@
             this.bLimpiar.UseVisualStyleBackColor = true;
             this.bLimpiar.Click += new System.EventHandler(this.bLimpiar_Click);
             // 
+            // pbarProgresoArchivos
+            // 
+            this.pbarProgresoArchivos.Location = new System.Drawing.Point(385, 82);
+            this.pbarProgresoArchivos.Name = "pbarProgresoArchivos";
+            this.pbarProgresoArchivos.Size = new System.Drawing.Size(222, 23);
+            this.pbarProgresoArchivos.TabIndex = 11;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(640, 338);
+            this.ClientSize = new System.Drawing.Size(796, 442);
+            this.Controls.Add(this.pbarProgresoArchivos);
             this.Controls.Add(this.bLimpiar);
             this.Controls.Add(this.bCancelar);
             this.Controls.Add(this.bComenzar);
@@ -233,7 +246,7 @@
             this.Controls.Add(this.gBInFiles);
             this.Controls.Add(this.gBOpciones);
             this.Controls.Add(this.groupBoxAlgoritmos);
-            this.MinimumSize = new System.Drawing.Size(572, 369);
+            this.MinimumSize = new System.Drawing.Size(812, 481);
             this.Name = "Form1";
             this.Text = "FGJCDMX - Calculadora de Hash";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
@@ -263,6 +276,7 @@
         private System.Windows.Forms.Button bComenzar;
         private System.Windows.Forms.Button bCancelar;
         private System.Windows.Forms.Button bLimpiar;
+        private System.Windows.Forms.ProgressBar pbarProgresoArchivos;
     }
 }
 

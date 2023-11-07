@@ -5,21 +5,32 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace PDI_Hash_Calc
 {
-    public partial class Form1 : Form 
+    public partial class Form1 : Form
     {
         bool calculando { get; set; }
         bool cancelar { get; set; }
+
+
+        Task TareaAgregarArchivosLista { get; set; }
+        DataTable DTListaArchivos { get; set; }
+
+        CancellationTokenSource CTStoken { get; set; }
+        //CancellationToken CTsalida { get; set; }
 
 
         public Form1()
         {
             InitializeComponent();
 
+            CTStoken = new CancellationTokenSource();
+
+            DTListaArchivos = new DataTable();
             //***
             //Crea las columnas para la tabla personalizada
             //***
@@ -28,35 +39,42 @@ namespace PDI_Hash_Calc
             colNombreArchivo.CellTemplate = new DataGridViewTextBoxCell();
             colNombreArchivo.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             dgvFiles.Columns.Add(colNombreArchivo);
+            DTListaArchivos.Columns.Add(colNombreArchivo.Name, typeof(string));
+
 
             DataGridViewProgressColumn colProgreso = new DataGridViewProgressColumn();
             colProgreso.Name = "Progreso";
             colProgreso.HeaderText = "Progreso";
             dgvFiles.Columns.Add(colProgreso);
+            DTListaArchivos.Columns.Add(colProgreso.Name, typeof(int));
 
             DataGridViewColumn colMD5 = new DataGridViewColumn();
             colMD5.Name = "MD5";
             colMD5.CellTemplate = new DataGridViewTextBoxCell();
             colMD5.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             dgvFiles.Columns.Add(colMD5);
+            DTListaArchivos.Columns.Add(colMD5.Name, typeof(string));
 
             DataGridViewColumn colSHA1 = new DataGridViewColumn();
             colSHA1.Name = "SHA1";
             colSHA1.CellTemplate = new DataGridViewTextBoxCell();
             colSHA1.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             dgvFiles.Columns.Add(colSHA1);
+            DTListaArchivos.Columns.Add(colSHA1.Name, typeof(string));
 
             DataGridViewColumn colSHA256 = new DataGridViewColumn();
             colSHA256.Name = "SHA256";
             colSHA256.CellTemplate = new DataGridViewTextBoxCell();
             colSHA256.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             dgvFiles.Columns.Add(colSHA256);
+            DTListaArchivos.Columns.Add(colSHA256.Name, typeof(string));
 
             DataGridViewColumn colSHA512 = new DataGridViewColumn();
             colSHA512.Name = "SHA512";
             colSHA512.CellTemplate = new DataGridViewTextBoxCell();
             colSHA512.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             dgvFiles.Columns.Add(colSHA512);
+            DTListaArchivos.Columns.Add(colSHA512.Name, typeof(string));
 
             calculando = false;
             cancelar = false;
@@ -64,46 +82,87 @@ namespace PDI_Hash_Calc
 
         }
 
-        private void dgvFiles_DragDrop(object sender, DragEventArgs e)
+
+        private async void dgvFiles_DragDrop(object sender, DragEventArgs e)
         {
             List<string> lista_archivos = new List<string>();
 
             // Checa si es un archivo/carpeta
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {          
-                // obten la lista de los que se arrastraron (lista original)
-                string[] archivos = (string[])e.Data.GetData(DataFormats.FileDrop);
-                                
-                // Comprueba para cada elemento que tipo es,si archivo o carpeta
-                foreach (string elemento in archivos)
-                {
-                    FileAttributes attr = File.GetAttributes(elemento);
-                    bool esFolder = (attr & FileAttributes.Directory) == FileAttributes.Directory;
+            {
 
-                    // Si es un folder, obten todos los elementos del mismo (con posible recursion) y los agrega a las lista
-                    if(esFolder)
+
+                TareaAgregarArchivosLista = Task.Run(() =>
+                {
+                    // obten la lista de los que se arrastraron (lista original)
+                    string[] archivos = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                    // Comprueba para cada elemento que tipo es,si archivo o carpeta
+                    foreach (string elemento in archivos)
                     {
-                        string[] sub_archivos = Directory.GetFiles(elemento, "*", 
-                            (cBRecursivo.Checked)? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-                        if(sub_archivos.Length > 0)
+                        FileAttributes attr = File.GetAttributes(elemento);
+                        bool esFolder = (attr & FileAttributes.Directory) == FileAttributes.Directory;
+
+                        // Si es un folder, obten todos los elementos del mismo (con posible recursion) y los agrega a las lista
+                        if (esFolder)
                         {
-                            lista_archivos.AddRange(sub_archivos);
+                            string[] sub_archivos = Directory.GetFiles(elemento, "*",
+                                (cBRecursivo.Checked) ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+                            if (sub_archivos.Length > 0)
+                            {
+                                lista_archivos.AddRange(sub_archivos);
+                            }
+                        }
+                        else
+                        {
+                            // si solo estaba seleccionado un archivo, lo agrega a la lista
+                            lista_archivos.Add(elemento);
                         }
                     }
-                    else
-                    {
-                        // si solo estaba seleccionado un archivo, lo agrega a la lista
-                        lista_archivos.Add(elemento);
-                    }                    
-                }
 
-                //hace vaciado de lista en la tabla
-                foreach (string archivo in lista_archivos)
+                });
+
+                await TareaAgregarArchivosLista;
+
+                dgvFiles.Rows.Clear();
+                dgvFiles.Rows.Add();
+                DataGridViewRow r = (DataGridViewRow)dgvFiles.Rows[0].Clone();
+                dgvFiles.Rows.Clear();
+
+                List<DataGridViewRow> listadgv_files = new List<DataGridViewRow>();
+
+
+                IProgress<List<DataGridViewRow>> ProgLista = new Progress<List<DataGridViewRow>>((val) =>
                 {
-                    //nombre - prog-md5-sha1-sha256-sha512
-                    object[] renglon = new object[] { archivo, 0, "", "", "", "" };
-                    dgvFiles.Rows.Add(renglon);
-                }
+                    dgvFiles.Rows.AddRange(val.ToArray());
+                });
+
+                TareaAgregarArchivosLista = Task.Run(() =>
+                {
+                    //hace vaciado de lista en la tabla
+                    for (int i = 0; i < lista_archivos.Count; i++)
+                    {
+                        //nombre - prog-md5-sha1-sha256-sha512
+                        //object[] renglon = new object[] { archivo, 0, "", "", "", "" };
+                        //dgvFiles.Rows.Add(renglon);
+                        //ProgLista.Report(renglon);
+
+                        var r_temp = (DataGridViewRow)r.Clone();
+                        r_temp.Cells[0].Value = lista_archivos[i];
+                        r_temp.Cells[1].Value = 0;
+                        r_temp.Cells[2].Value = "";
+                        r_temp.Cells[3].Value = "";
+                        r_temp.Cells[4].Value = "";
+                        r_temp.Cells[5].Value = "";
+
+                        listadgv_files.Add(r_temp);
+                    }
+
+                    ProgLista.Report(listadgv_files);
+                });
+
+                await TareaAgregarArchivosLista;
+
 
 
 
@@ -129,10 +188,16 @@ namespace PDI_Hash_Calc
             dgvFiles.Rows.Clear();
         }
 
+        static ReaderWriterLockSlim RWlock = new ReaderWriterLockSlim();
+
         private async void bComenzar_Click(object sender, EventArgs e)
         {
             //indice de avance en la tabla de archivos
-            int renglon_actual = 0;
+            //int renglon_actual = 0;
+            CTStoken = new CancellationTokenSource();
+            CancellationToken CTsalida = CTStoken.Token;
+
+            Object p_lock = new Object();
 
             if (dgvFiles.Rows.Count <= 0)
             {
@@ -153,6 +218,7 @@ namespace PDI_Hash_Calc
             bArchivo.Enabled = false;
             bLimpiar.Enabled = false;
 
+            dgvFiles.AllowDrop = false;
 
             bCancelar.Enabled = true;
 
@@ -171,6 +237,7 @@ namespace PDI_Hash_Calc
                 dt.Columns.Add(col.Name);
             }
 
+            //Copia los datos del datagridview
             foreach (DataGridViewRow row in dgvFiles.Rows)
             {
                 DataRow dRow = dt.NewRow();
@@ -186,197 +253,92 @@ namespace PDI_Hash_Calc
             {
                 //dgvFiles.Rows[val.linea].Selected = true;
                 dgvFiles.FirstDisplayedScrollingRowIndex = val.linea;
-                
+
             });
 
             //***
             //Con los siguientes reporteadores se actualizan las celdas con los hashes calculados, asi mismo el porcentaje
             //***
-            IProgress<MensajeReporte> barraprogreso = new Progress<MensajeReporte>((val) =>
+            IProgress<int> barraprogreso = new Progress<int>((val) =>
             {
-                dgvFiles.Rows[val.linea].Cells[1].Value = val.porcentaje;
+                pbarProgresoArchivos.Value = val;
             });
             IProgress<MensajeReporte> progressMD5 = new Progress<MensajeReporte>((s) =>
             {
+                //RWlock.EnterWriteLock();
+                dgvFiles.Rows[s.linea].Cells[1].Value = s.porcentaje;
                 dgvFiles.Rows[s.linea].Cells[2].Value = s.mensaje;
+                //RWlock.ExitWriteLock();
             });
             IProgress<MensajeReporte> progressSHA1 = new Progress<MensajeReporte>((s) =>
             {
+                //RWlock.EnterWriteLock();
+                dgvFiles.Rows[s.linea].Cells[1].Value = s.porcentaje;
                 dgvFiles.Rows[s.linea].Cells[3].Value = s.mensaje;
+                //RWlock.ExitWriteLock();
             });
             IProgress<MensajeReporte> progressSHA256 = new Progress<MensajeReporte>((s) =>
             {
+                //RWlock.EnterWriteLock();
+                dgvFiles.Rows[s.linea].Cells[1].Value = s.porcentaje;
                 dgvFiles.Rows[s.linea].Cells[4].Value = s.mensaje;
+                //RWlock.ExitWriteLock();
             });
             IProgress<MensajeReporte> progressSHA512 = new Progress<MensajeReporte>((s) =>
             {
+                //RWlock.ExitWriteLock();
+                dgvFiles.Rows[s.linea].Cells[1].Value = s.porcentaje;
                 dgvFiles.Rows[s.linea].Cells[5].Value = s.mensaje;
+                //RWlock.ExitWriteLock();
             });
 
 
-            await Task.Run(() => 
+            try
             {
-                foreach(DataRow r in dt.Rows) 
+                await Task.Run(() =>
                 {
-                    // strean que leerael archivo
-                    Stream f_stream = new MemoryStream();
-                    long bytes_leidos;
-                    // variables de calculo de hash
-                    HashAlgorithm hash_MD5, hash_SHA1, hash_SHA256, hash_SHA512;
-                    hash_MD5 = MD5.Create();
-                    hash_SHA1 = SHA1.Create();
-                    hash_SHA256 = SHA256.Create();
-                    hash_SHA512 = SHA512.Create();
-
-                    // reporteador para seleccionar la linea
-                    prog_select.Report(new MensajeReporte { linea = renglon_actual});
-                    
-                    // intenta abrir el archivo
-                    try
+                    for (int i = 0; i < dt.Rows.Count; i++)
                     {
-                        f_stream = (Stream)File.Open(r[0].ToString(), FileMode.Open);
-                    }
-                    catch(Exception ex) 
-                    {
-                        // Si esta ocupado por otro proceso o hay algun error de lectura, reporta y continua con el siguiente archivo
-                        var reporte_msg = new MensajeReporte
+                        if (CTsalida.IsCancellationRequested)
                         {
-                            linea = renglon_actual,
-                            mensaje = "Error: " + ex.Message
-                        };
-                        if(checkBoxMD5.Checked)
-                            progressMD5.Report(reporte_msg);
-                        if(checkBoxSHA1.Checked)   
-                            progressSHA1.Report(reporte_msg);
-                        if(checkBoxSHA256.Checked)
-                            progressSHA256.Report(reporte_msg);
-                        if(checkBoxSHA512.Checked)
-                            progressSHA512.Report(reporte_msg);
-
-                        renglon_actual++;
-                        continue;
-                    }
-                    finally
-                    {
-
-                    }
-
-                    //tamaño del buffer de lectura
-                    int bufferSize = 4096;
-
-                    // variables de lectura (buffer intermedios)
-                    byte[] readAheadBuffer, buffer;
-                    int readAheadBytesRead, bytesRead;
-                    long size, totalBytesRead = 0;
-
-                    bytes_leidos = 0;
-                    size = f_stream.Length;
-
-                    // inicializa y lee el archivo (buffersize cantidad de bytes)
-                    readAheadBuffer = new byte[bufferSize];
-                    readAheadBytesRead = f_stream.Read(readAheadBuffer, 0, readAheadBuffer.Length);
-
-                    totalBytesRead += readAheadBytesRead;
-                    bytes_leidos = totalBytesRead;
-
-                    do
-                    {
-                        //***
-                        //En este loop se lee un fragmenteo de archivo y se integra al calculo de hashes
-                        //***
-
-                        bytesRead = readAheadBytesRead;
-                        buffer = readAheadBuffer;
-
-                        readAheadBuffer = new byte[bufferSize];
-                        readAheadBytesRead = f_stream.Read(readAheadBuffer, 0, readAheadBuffer.Length);
-
-                        totalBytesRead += readAheadBytesRead;
-                        bytes_leidos = totalBytesRead;
-
-                        // si ya no hay mas que leer, finaliza el calculo de hash
-                        if (readAheadBytesRead == 0)
-                        {
-                            if (checkBoxMD5.Checked)
-                                hash_MD5.TransformFinalBlock(buffer, 0, bytesRead);
-                            if (checkBoxSHA1.Checked)
-                                hash_SHA1.TransformFinalBlock(buffer, 0, bytesRead);
-                            if (checkBoxSHA256.Checked)
-                                hash_SHA256.TransformFinalBlock(buffer, 0, bytesRead);
-                            if (checkBoxSHA512.Checked)
-                                hash_SHA512.TransformFinalBlock(buffer, 0, bytesRead);
+                            barraprogreso.Report(0);
+                            return;
                         }
-                        else
-                        {
-                            if (checkBoxMD5.Checked)
-                                hash_MD5.TransformBlock(buffer, 0, bytesRead, buffer, 0);
-                            if (checkBoxSHA1.Checked)
-                                hash_SHA1.TransformBlock(buffer, 0, bytesRead, buffer, 0);
-                            if (checkBoxSHA256.Checked)
-                                hash_SHA256.TransformBlock(buffer, 0, bytesRead, buffer, 0);
-                            if (checkBoxSHA512.Checked)
-                                hash_SHA512.TransformBlock(buffer, 0, bytesRead, buffer, 0);
 
+                        int prog = (100 * i) / dt.Rows.Count;
+                        barraprogreso.Report(prog);
+
+                        if (checkBoxMD5.Checked)
+                        {
+                            GeneradorHash.Calcular(dt.Rows[(int)i][0].ToString(), GeneradorHash.AlgoritmoHash.MD5, progressMD5, i, CTsalida);
                         }
-                        //Reporta el avance ( pporcentaje )
-                        var reporte_mensaje = new MensajeReporte 
-                        { 
-                            linea = renglon_actual, 
-                            porcentaje = (size == 0) ? 100 : (int)((100 * totalBytesRead) / size) 
-                        };
-                        barraprogreso.Report(reporte_mensaje);
-                        
-                        
-
-                    } while (readAheadBytesRead != 0);
-
-                    f_stream.Close();
-
-                    //***
-                    //Cuando acab de hacer el calculo, reporta el resultado de hash
-                    //***
-
-                    if (checkBoxMD5.Checked)
-                    {
-                        progressMD5.Report(new MensajeReporte 
-                        { 
-                            linea  = renglon_actual, 
-                            mensaje = BitConverter.ToString(hash_MD5.Hash).ToUpper().Replace("-", "")
-                        });
-                    }
-                    if (checkBoxSHA1.Checked)
-                    {
-                        progressSHA1.Report(new MensajeReporte
+                        if (checkBoxSHA1.Checked)
                         {
-                            linea=renglon_actual,
-                            mensaje = BitConverter.ToString(hash_SHA1.Hash).ToUpper().Replace("-", "")
-                        });
-                    }
-                    if (checkBoxSHA256.Checked)
-                    {
-                        progressSHA256.Report(new MensajeReporte 
-                        { 
-                            linea = renglon_actual, 
-                            mensaje = BitConverter.ToString(hash_SHA256.Hash).ToUpper().Replace("-", "") 
-                        });
-                        //flagsha256 = false;
-                    }
-                    if (checkBoxSHA512.Checked)
-                    {
-                        progressSHA512.Report(new MensajeReporte 
-                        { 
-                            linea = renglon_actual, 
-                            mensaje = BitConverter.ToString(hash_SHA512.Hash).ToUpper().Replace("-", "") 
-                        });
-                    }
-                    renglon_actual++;
+                            GeneradorHash.Calcular(dt.Rows[(int)i][0].ToString(), GeneradorHash.AlgoritmoHash.SHA1, progressSHA1, i, CTsalida);
+                        }
+                        if (checkBoxSHA256.Checked)
+                        {
+                            GeneradorHash.Calcular(dt.Rows[(int)i][0].ToString(), GeneradorHash.AlgoritmoHash.SHA256, progressSHA256, i, CTsalida);
+                        }
+                        if (checkBoxSHA512.Checked)
+                        {
+                            GeneradorHash.Calcular(dt.Rows[(int)i][0].ToString(), GeneradorHash.AlgoritmoHash.SHA512, progressSHA512, i, CTsalida);
+                        }
+                    }//);
+                    barraprogreso.Report(100);
 
-                    if(cancelar)
-                    {
-                        break;
-                    }
-                }
-            });
+                }, CTsalida);
+
+            }
+            catch (AggregateException ae)
+            {
+                ae.Handle(ex =>
+                {
+                    //Console.WriteLine(ex.Message);
+                    return true;
+                });
+            }
+
 
             //***
             //Establece las (des)habilitaciones de la interface usuario para evitar errores de interaccion
@@ -389,6 +351,8 @@ namespace PDI_Hash_Calc
             bArchivo.Enabled = true;
             bLimpiar.Enabled = true;
 
+            dgvFiles.AllowDrop = true;
+
             bCancelar.Enabled = false;
 
             calculando = false;
@@ -398,7 +362,7 @@ namespace PDI_Hash_Calc
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if(calculando) 
+            if (calculando)
             {
                 e.Cancel = true;
             }
@@ -407,6 +371,7 @@ namespace PDI_Hash_Calc
         private void bCancelar_Click(object sender, EventArgs e)
         {
             cancelar = true;
+            CTStoken.Cancel();
         }
     }
 
@@ -440,11 +405,11 @@ namespace PDI_Hash_Calc
         {
             return emptyImage;
         }
-        protected override void Paint(System.Drawing.Graphics g, System.Drawing.Rectangle clipBounds, System.Drawing.Rectangle cellBounds, int rowIndex, DataGridViewElementStates cellState, object value, object formattedValue, string errorText, DataGridViewCellStyle cellStyle, DataGridViewAdvancedBorderStyle advancedBorderStyle, DataGridViewPaintParts paintParts)
+        protected override void Paint(Graphics g, Rectangle clipBounds, Rectangle cellBounds, int rowIndex, DataGridViewElementStates cellState, object value, object formattedValue, string errorText, DataGridViewCellStyle cellStyle, DataGridViewAdvancedBorderStyle advancedBorderStyle, DataGridViewPaintParts paintParts)
         {
             try
             {
-                int progressVal = (int)value;
+                int progressVal = (int)(value != null ? value : 0);
                 float percentage = ((float)progressVal / 100.0f); // Need to convert to float before division; otherwise C# returns int which is 0 for anything but 100%.
                 Brush backColorBrush = new SolidBrush(cellStyle.BackColor);
                 Brush foreColorBrush = new SolidBrush(cellStyle.ForeColor);
