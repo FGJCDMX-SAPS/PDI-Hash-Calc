@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.groupBoxAlgoritmos = new System.Windows.Forms.GroupBox();
             this.checkBoxSHA512 = new System.Windows.Forms.CheckBox();
             this.checkBoxSHA256 = new System.Windows.Forms.CheckBox();
@@ -40,11 +41,12 @@
             this.dgvFiles = new System.Windows.Forms.DataGridView();
             this.bCarpeta = new System.Windows.Forms.Button();
             this.bArchivo = new System.Windows.Forms.Button();
-            this.bComenzar = new System.Windows.Forms.Button();
-            this.bCancelar = new System.Windows.Forms.Button();
             this.bLimpiar = new System.Windows.Forms.Button();
             this.pbarProgresoArchivos = new System.Windows.Forms.ProgressBar();
             this.labelProgresoArchivos = new System.Windows.Forms.Label();
+            this.bExportar = new System.Windows.Forms.Button();
+            this.bCancelar = new System.Windows.Forms.Button();
+            this.bComenzar = new System.Windows.Forms.Button();
             this.groupBoxAlgoritmos.SuspendLayout();
             this.gBOpciones.SuspendLayout();
             this.gBInFiles.SuspendLayout();
@@ -130,6 +132,7 @@
             this.cBReporte.TabIndex = 1;
             this.cBReporte.Text = "Archivo de Reporte";
             this.cBReporte.UseVisualStyleBackColor = true;
+            this.cBReporte.Visible = false;
             // 
             // cBRecursivo
             // 
@@ -151,7 +154,7 @@
             this.gBInFiles.Controls.Add(this.dgvFiles);
             this.gBInFiles.Location = new System.Drawing.Point(11, 111);
             this.gBInFiles.Name = "gBInFiles";
-            this.gBInFiles.Size = new System.Drawing.Size(773, 319);
+            this.gBInFiles.Size = new System.Drawing.Size(852, 319);
             this.gBInFiles.TabIndex = 5;
             this.gBInFiles.TabStop = false;
             this.gBInFiles.Text = "Archivos para Procesar";
@@ -168,14 +171,14 @@
             this.dgvFiles.Name = "dgvFiles";
             this.dgvFiles.ReadOnly = true;
             this.dgvFiles.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvFiles.Size = new System.Drawing.Size(767, 300);
+            this.dgvFiles.Size = new System.Drawing.Size(846, 300);
             this.dgvFiles.TabIndex = 0;
             this.dgvFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragDrop);
             this.dgvFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.dgvFiles_DragEnter);
             // 
             // bCarpeta
             // 
-            this.bCarpeta.Location = new System.Drawing.Point(436, 12);
+            this.bCarpeta.Location = new System.Drawing.Point(486, 11);
             this.bCarpeta.Name = "bCarpeta";
             this.bCarpeta.Size = new System.Drawing.Size(95, 23);
             this.bCarpeta.TabIndex = 6;
@@ -185,7 +188,7 @@
             // 
             // bArchivo
             // 
-            this.bArchivo.Location = new System.Drawing.Point(537, 12);
+            this.bArchivo.Location = new System.Drawing.Point(385, 11);
             this.bArchivo.Name = "bArchivo";
             this.bArchivo.Size = new System.Drawing.Size(95, 23);
             this.bArchivo.TabIndex = 7;
@@ -193,36 +196,15 @@
             this.bArchivo.UseVisualStyleBackColor = true;
             this.bArchivo.Visible = false;
             // 
-            // bComenzar
-            // 
-            this.bComenzar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bComenzar.Location = new System.Drawing.Point(628, 82);
-            this.bComenzar.Name = "bComenzar";
-            this.bComenzar.Size = new System.Drawing.Size(75, 23);
-            this.bComenzar.TabIndex = 8;
-            this.bComenzar.Text = "Comenzar";
-            this.bComenzar.UseVisualStyleBackColor = true;
-            this.bComenzar.Click += new System.EventHandler(this.bComenzar_Click);
-            // 
-            // bCancelar
-            // 
-            this.bCancelar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.bCancelar.Enabled = false;
-            this.bCancelar.Location = new System.Drawing.Point(709, 82);
-            this.bCancelar.Name = "bCancelar";
-            this.bCancelar.Size = new System.Drawing.Size(75, 23);
-            this.bCancelar.TabIndex = 9;
-            this.bCancelar.Text = "Cancelar";
-            this.bCancelar.UseVisualStyleBackColor = true;
-            this.bCancelar.Click += new System.EventHandler(this.bCancelar_Click);
-            // 
             // bLimpiar
             // 
-            this.bLimpiar.Location = new System.Drawing.Point(284, 82);
+            this.bLimpiar.Image = global::PDI_Hash_Calc.Properties.Resources.cell_clear;
+            this.bLimpiar.Location = new System.Drawing.Point(284, 47);
             this.bLimpiar.Name = "bLimpiar";
-            this.bLimpiar.Size = new System.Drawing.Size(95, 23);
+            this.bLimpiar.Size = new System.Drawing.Size(95, 58);
             this.bLimpiar.TabIndex = 10;
             this.bLimpiar.Text = "Limpiar Lista";
+            this.bLimpiar.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             this.bLimpiar.UseVisualStyleBackColor = true;
             this.bLimpiar.Click += new System.EventHandler(this.bLimpiar_Click);
             // 
@@ -241,11 +223,51 @@
             this.labelProgresoArchivos.Size = new System.Drawing.Size(0, 13);
             this.labelProgresoArchivos.TabIndex = 12;
             // 
+            // bExportar
+            // 
+            this.bExportar.Image = global::PDI_Hash_Calc.Properties.Resources.excel_exports;
+            this.bExportar.Location = new System.Drawing.Point(613, 47);
+            this.bExportar.Name = "bExportar";
+            this.bExportar.Size = new System.Drawing.Size(75, 58);
+            this.bExportar.TabIndex = 13;
+            this.bExportar.Text = "Exportar";
+            this.bExportar.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.bExportar.UseVisualStyleBackColor = true;
+            this.bExportar.Click += new System.EventHandler(this.bExportar_Click);
+            // 
+            // bCancelar
+            // 
+            this.bCancelar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.bCancelar.Enabled = false;
+            this.bCancelar.Image = global::PDI_Hash_Calc.Properties.Resources.control_stop_blue;
+            this.bCancelar.Location = new System.Drawing.Point(788, 47);
+            this.bCancelar.Name = "bCancelar";
+            this.bCancelar.Size = new System.Drawing.Size(75, 58);
+            this.bCancelar.TabIndex = 9;
+            this.bCancelar.Text = "Cancelar";
+            this.bCancelar.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.bCancelar.UseVisualStyleBackColor = true;
+            this.bCancelar.Click += new System.EventHandler(this.bCancelar_Click);
+            // 
+            // bComenzar
+            // 
+            this.bComenzar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.bComenzar.Image = global::PDI_Hash_Calc.Properties.Resources.control_play_blue;
+            this.bComenzar.Location = new System.Drawing.Point(707, 47);
+            this.bComenzar.Name = "bComenzar";
+            this.bComenzar.Size = new System.Drawing.Size(75, 58);
+            this.bComenzar.TabIndex = 8;
+            this.bComenzar.Text = "Comenzar";
+            this.bComenzar.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.bComenzar.UseVisualStyleBackColor = true;
+            this.bComenzar.Click += new System.EventHandler(this.bComenzar_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(796, 442);
+            this.ClientSize = new System.Drawing.Size(875, 442);
+            this.Controls.Add(this.bExportar);
             this.Controls.Add(this.labelProgresoArchivos);
             this.Controls.Add(this.pbarProgresoArchivos);
             this.Controls.Add(this.bLimpiar);
@@ -256,7 +278,8 @@
             this.Controls.Add(this.gBInFiles);
             this.Controls.Add(this.gBOpciones);
             this.Controls.Add(this.groupBoxAlgoritmos);
-            this.MinimumSize = new System.Drawing.Size(812, 481);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(891, 481);
             this.Name = "Form1";
             this.Text = "FGJCDMX - Calculadora de Hash";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
@@ -289,6 +312,7 @@
         private System.Windows.Forms.Button bLimpiar;
         private System.Windows.Forms.ProgressBar pbarProgresoArchivos;
         private System.Windows.Forms.Label labelProgresoArchivos;
+        private System.Windows.Forms.Button bExportar;
     }
 }
 

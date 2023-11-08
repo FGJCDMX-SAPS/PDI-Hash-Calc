@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClosedXML.Excel;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -16,13 +17,9 @@ namespace PDI_Hash_Calc
         bool calculando { get; set; }
         bool cancelar { get; set; }
 
-
         Task TareaAgregarArchivosLista { get; set; }
 
-
         CancellationTokenSource CTStoken { get; set; }
-        //CancellationToken CTsalida { get; set; }
-
 
         public Form1()
         {
@@ -128,7 +125,7 @@ namespace PDI_Hash_Calc
                 IProgress<List<DataGridViewRow>> ProgLista = new Progress<List<DataGridViewRow>>((val) =>
                 {
                     dgvFiles.Rows.AddRange(val.ToArray());
-                });               
+                });
                 TareaAgregarArchivosLista = Task.Run(() =>
                 {
                     //hace vaciado de lista en la tabla
@@ -227,7 +224,7 @@ namespace PDI_Hash_Calc
                 dt.Rows.Add(dRow);
             }
 
-            // Con este reporteador, se avanza en la tabla de archivos
+            // Con este reporteador, se avanza en la tabla de archivos, pero se siente que se traba, no se implementa
             IProgress<int> prog_select = new Progress<int>((val) =>
             {
                 dgvFiles.FirstDisplayedScrollingRowIndex = val;
@@ -249,31 +246,23 @@ namespace PDI_Hash_Calc
 
             IProgress<MensajeReporte> progressMD5 = new Progress<MensajeReporte>((s) =>
             {
-                //RWlock.EnterWriteLock();
                 dgvFiles.Rows[s.linea].Cells[1].Value = s.porcentaje;
                 dgvFiles.Rows[s.linea].Cells[2].Value = s.mensaje;
-                //RWlock.ExitWriteLock();
             });
             IProgress<MensajeReporte> progressSHA1 = new Progress<MensajeReporte>((s) =>
             {
-                //RWlock.EnterWriteLock();
                 dgvFiles.Rows[s.linea].Cells[1].Value = s.porcentaje;
                 dgvFiles.Rows[s.linea].Cells[3].Value = s.mensaje;
-                //RWlock.ExitWriteLock();
             });
             IProgress<MensajeReporte> progressSHA256 = new Progress<MensajeReporte>((s) =>
             {
-                //RWlock.EnterWriteLock();
                 dgvFiles.Rows[s.linea].Cells[1].Value = s.porcentaje;
                 dgvFiles.Rows[s.linea].Cells[4].Value = s.mensaje;
-                //RWlock.ExitWriteLock();
             });
             IProgress<MensajeReporte> progressSHA512 = new Progress<MensajeReporte>((s) =>
             {
-                //RWlock.ExitWriteLock();
                 dgvFiles.Rows[s.linea].Cells[1].Value = s.porcentaje;
                 dgvFiles.Rows[s.linea].Cells[5].Value = s.mensaje;
-                //RWlock.ExitWriteLock();
             });
 
 
@@ -281,6 +270,7 @@ namespace PDI_Hash_Calc
             {
                 await Task.Run(() =>
                 {
+                    labelprogreso.Report($"0 de {dt.Rows.Count} archivos procesados [0%]");
                     for (int i = 0; i < dt.Rows.Count; i++)
                     {
                         if (CTsalida.IsCancellationRequested)
@@ -289,11 +279,6 @@ namespace PDI_Hash_Calc
                             labelprogreso.Report("");
                             return;
                         }
-
-                        int prog = (100 * i) / dt.Rows.Count;
-                        barraprogreso.Report(prog);
-                        labelprogreso.Report($"{i+1} de {dt.Rows.Count} archivos procesados [{prog}%]");
-                        prog_select.Report(i);
 
                         if (checkBoxMD5.Checked)
                         {
@@ -311,6 +296,12 @@ namespace PDI_Hash_Calc
                         {
                             GeneradorHash.Calcular(dt.Rows[(int)i][0].ToString(), GeneradorHash.AlgoritmoHash.SHA512, progressSHA512, i, CTsalida);
                         }
+
+                        int prog = (100 * i) / dt.Rows.Count;
+                        barraprogreso.Report(prog);
+                        labelprogreso.Report($"{i + 1} de {dt.Rows.Count} archivos procesados [{prog}%]");
+                        //prog_select.Report(i);
+
                     }
                     barraprogreso.Report(100);
                     labelprogreso.Report("Completado!!");
@@ -361,6 +352,73 @@ namespace PDI_Hash_Calc
             bCancelar.Enabled = false;
             CTStoken.Cancel();
         }
+
+        private  void bExportar_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = "Excel (*.xlsx)|*.xlsx";
+            sfd.Title = "Guardar Lista...";
+            sfd.FileName = $"ListaArchivosHash";
+
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                XLWorkbook wb = new XLWorkbook();
+
+                dgvFiles.Columns[1].Visible = false;
+                DataTable dt = DataGridView2DataTable(dgvFiles, true);
+                dgvFiles.Columns[1].Visible = true;
+                //dt.Columns.RemoveAt(0);
+                wb.Worksheets.Add(dt, "Codigos Hash").Columns().AdjustToContents();
+
+                try
+                {
+                    wb.SaveAs(sfd.FileName);
+                    // genera el hash para el archivo de salida
+                    MessageBox.Show("Archivo Guardado en: " + sfd.FileName, "Calculadora de Hash", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("No se puede guardar archivo: " + ex.Message, "Calculadora de Hash", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        public DataTable DataGridView2DataTable(DataGridView dgvin, bool IgnoreHideColumns = false)
+        {
+            try
+            {
+                if (dgvin.ColumnCount == 0) return null;
+                DataTable dtSource = new DataTable();
+
+                //Nombre de las columnas, salta si no tiene nombre o no es visible
+                foreach (DataGridViewColumn col in dgvin.Columns)
+                {
+                    if (IgnoreHideColumns & !col.Visible) continue;
+                    if (col.Name == string.Empty) continue;
+
+                    dtSource.Columns.Add(col.Name, typeof(string));
+                    //dtSource.Columns.Add(col.Name);
+                    dtSource.Columns[col.Name].Caption = col.HeaderText;
+
+                }
+
+                if (dtSource.Columns.Count == 0) return null;
+
+                //Pasa los renglones
+                foreach (DataGridViewRow row in dgvin.Rows)
+                {
+                    DataRow drNewRow = dtSource.NewRow();
+                    foreach (DataColumn col in dtSource.Columns)
+                    {
+                        drNewRow[col.ColumnName] = row.Cells[col.ColumnName].FormattedValue.ToString();
+                    }
+                    dtSource.Rows.Add(drNewRow);
+                }
+                return dtSource;
+            }
+            catch { return null; }
+        }
+
     }
 
     public class DataGridViewProgressColumn : DataGridViewImageColumn
@@ -421,7 +479,7 @@ namespace PDI_Hash_Calc
                         g.DrawString(progressVal.ToString() + "%", cellStyle.Font, foreColorBrush, cellBounds.X + 6, cellBounds.Y + 2);
                 }
             }
-            catch (Exception e) { }
+            catch /*(Exception e)*/ { }
 
         }
     }
@@ -432,4 +490,7 @@ namespace PDI_Hash_Calc
         public int porcentaje { get; set; }
         public string mensaje { get; set; }
     }
+
+
+
 }
