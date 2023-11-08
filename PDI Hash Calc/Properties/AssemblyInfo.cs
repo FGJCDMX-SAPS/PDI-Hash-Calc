@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // conjunto de atributos. Cambie estos valores de atributo para modificar la información
 // asociada con un ensamblado.
 [assembly: AssemblyTitle("PDI Hash Calc")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Calculadora de Codigos Hash para Archivos. Autor: Adrian Enrique Cardenas Campos")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Fiscalia General de Justicia de la Ciudad de México - PDI -")]
 [assembly: AssemblyProduct("PDI Hash Calc")]
 [assembly: AssemblyCopyright("Copyright ©  2023")]
 [assembly: AssemblyTrademark("")]

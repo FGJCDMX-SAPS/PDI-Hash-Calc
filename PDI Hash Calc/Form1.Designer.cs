@@ -41,10 +41,11 @@
             this.dgvFiles = new System.Windows.Forms.DataGridView();
             this.bCarpeta = new System.Windows.Forms.Button();
             this.bArchivo = new System.Windows.Forms.Button();
-            this.bLimpiar = new System.Windows.Forms.Button();
             this.pbarProgresoArchivos = new System.Windows.Forms.ProgressBar();
             this.labelProgresoArchivos = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
             this.bExportar = new System.Windows.Forms.Button();
+            this.bLimpiar = new System.Windows.Forms.Button();
             this.bCancelar = new System.Windows.Forms.Button();
             this.bComenzar = new System.Windows.Forms.Button();
             this.groupBoxAlgoritmos.SuspendLayout();
@@ -178,7 +179,7 @@
             // 
             // bCarpeta
             // 
-            this.bCarpeta.Location = new System.Drawing.Point(486, 11);
+            this.bCarpeta.Location = new System.Drawing.Point(707, 12);
             this.bCarpeta.Name = "bCarpeta";
             this.bCarpeta.Size = new System.Drawing.Size(95, 23);
             this.bCarpeta.TabIndex = 6;
@@ -188,25 +189,13 @@
             // 
             // bArchivo
             // 
-            this.bArchivo.Location = new System.Drawing.Point(385, 11);
+            this.bArchivo.Location = new System.Drawing.Point(606, 12);
             this.bArchivo.Name = "bArchivo";
             this.bArchivo.Size = new System.Drawing.Size(95, 23);
             this.bArchivo.TabIndex = 7;
             this.bArchivo.Text = "Abrir Archivo";
             this.bArchivo.UseVisualStyleBackColor = true;
             this.bArchivo.Visible = false;
-            // 
-            // bLimpiar
-            // 
-            this.bLimpiar.Image = global::PDI_Hash_Calc.Properties.Resources.cell_clear;
-            this.bLimpiar.Location = new System.Drawing.Point(284, 47);
-            this.bLimpiar.Name = "bLimpiar";
-            this.bLimpiar.Size = new System.Drawing.Size(95, 58);
-            this.bLimpiar.TabIndex = 10;
-            this.bLimpiar.Text = "Limpiar Lista";
-            this.bLimpiar.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this.bLimpiar.UseVisualStyleBackColor = true;
-            this.bLimpiar.Click += new System.EventHandler(this.bLimpiar_Click);
             // 
             // pbarProgresoArchivos
             // 
@@ -223,6 +212,17 @@
             this.labelProgresoArchivos.Size = new System.Drawing.Size(0, 13);
             this.labelProgresoArchivos.TabIndex = 12;
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(284, 12);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(95, 23);
+            this.button1.TabIndex = 14;
+            this.button1.Text = "Acerca de";
+            this.button1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // bExportar
             // 
             this.bExportar.Image = global::PDI_Hash_Calc.Properties.Resources.excel_exports;
@@ -234,6 +234,18 @@
             this.bExportar.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             this.bExportar.UseVisualStyleBackColor = true;
             this.bExportar.Click += new System.EventHandler(this.bExportar_Click);
+            // 
+            // bLimpiar
+            // 
+            this.bLimpiar.Image = global::PDI_Hash_Calc.Properties.Resources.cell_clear;
+            this.bLimpiar.Location = new System.Drawing.Point(284, 47);
+            this.bLimpiar.Name = "bLimpiar";
+            this.bLimpiar.Size = new System.Drawing.Size(95, 58);
+            this.bLimpiar.TabIndex = 10;
+            this.bLimpiar.Text = "Limpiar Lista";
+            this.bLimpiar.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.bLimpiar.UseVisualStyleBackColor = true;
+            this.bLimpiar.Click += new System.EventHandler(this.bLimpiar_Click);
             // 
             // bCancelar
             // 
@@ -267,6 +279,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(875, 442);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.bExportar);
             this.Controls.Add(this.labelProgresoArchivos);
             this.Controls.Add(this.pbarProgresoArchivos);
@@ -281,6 +294,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(891, 481);
             this.Name = "Form1";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "FGJCDMX - Calculadora de Hash";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.groupBoxAlgoritmos.ResumeLayout(false);
@@ -313,6 +327,7 @@
         private System.Windows.Forms.ProgressBar pbarProgresoArchivos;
         private System.Windows.Forms.Label labelProgresoArchivos;
         private System.Windows.Forms.Button bExportar;
+        private System.Windows.Forms.Button button1;
     }
 }
 

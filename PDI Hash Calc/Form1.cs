@@ -419,6 +419,11 @@ namespace PDI_Hash_Calc
             catch { return null; }
         }
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            ABAcercaDe ventana = new ABAcercaDe();
+            ventana.ShowDialog();
+        }
     }
 
     public class DataGridViewProgressColumn : DataGridViewImageColumn
